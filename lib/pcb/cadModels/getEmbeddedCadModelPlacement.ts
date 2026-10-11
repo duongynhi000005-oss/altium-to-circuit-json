@@ -1,15 +1,11 @@
 import type { AltiumComponentBodyRecord, AltiumComponentRecord } from "altiumts"
 import type { PcbBoard, Point } from "circuit-json"
 import { toMillimeterPoint } from "../geometry"
+import { getPcbBoardDiagonal } from "./getPcbBoardDiagonal"
 
 interface EmbeddedCadModelPlacement {
   modelOriginPosition: Point
   position: Point
-}
-
-function getBoardDiagonal(pcbBoard: PcbBoard | undefined): number | undefined {
-  if (!pcbBoard?.width || !pcbBoard.height) return undefined
-  return Math.hypot(pcbBoard.width, pcbBoard.height)
 }
 
 export function getEmbeddedCadModelPlacement({
@@ -33,7 +29,7 @@ export function getEmbeddedCadModelPlacement({
     modelPositionMillimeters.x - componentPositionMillimeters.x,
     modelPositionMillimeters.y - componentPositionMillimeters.y,
   )
-  const boardDiagonal = getBoardDiagonal(pcbBoard)
+  const boardDiagonal = getPcbBoardDiagonal(pcbBoard)
   const hasBoardGlobalModelOrigin =
     boardDiagonal !== undefined && distanceFromComponent > boardDiagonal
 
