@@ -14,7 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --ignore-scripts
-      - run: bun run prepare
+      - run: bun install --frozen-lockfile
       - run: bun run build
       - run: bunx pkg-pr-new publish --compact --comment=off
