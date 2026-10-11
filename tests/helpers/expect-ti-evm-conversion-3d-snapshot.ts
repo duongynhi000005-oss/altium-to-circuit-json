@@ -40,7 +40,9 @@ async function replaceStepUrlsWithEmbeddedModelData({
   )
   const referencedModelIndexes = new Set(
     circuitJson.flatMap((element) =>
-      element.type === "cad_component" ? [getEmbeddedModelIndex(element)] : [],
+      element.type === "cad_component" && element.model_step_url
+        ? [getEmbeddedModelIndex(element)]
+        : [],
     ),
   )
   const embeddedStepModelUrlByModelIndex = new Map<EmbeddedModelIndex, string>()
@@ -60,7 +62,9 @@ async function replaceStepUrlsWithEmbeddedModelData({
   )
 
   return circuitJson.map((element) => {
-    if (element.type !== "cad_component") return element
+    if (element.type !== "cad_component" || !element.model_step_url) {
+      return element
+    }
     const embeddedModelIndex = getEmbeddedModelIndex(element)
     const modelStepUrl =
       embeddedStepModelUrlByModelIndex.get(embeddedModelIndex)

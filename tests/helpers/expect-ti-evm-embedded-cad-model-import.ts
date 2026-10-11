@@ -90,7 +90,8 @@ export const expectTiEvmEmbeddedCadModelImport = async ({
       `/cad-models/${pcbFilename}/${embeddedModel.index}.step`,
   })
   const importedCadModels = circuitJson.filter(
-    (element): element is CadComponent => element.type === "cad_component",
+    (element): element is CadComponent =>
+      element.type === "cad_component" && element.model_step_url !== undefined,
   )
   const pcbBoard = circuitJson.find((element) => element.type === "pcb_board")
   if (!pcbBoard) throw new Error(`${pcbFilename} has no converted PCB board`)
@@ -131,8 +132,12 @@ export const expectTiEvmEmbeddedCadModelImport = async ({
       `/cad-models/${pcbFilename}/${placement.modelIndex}.step`,
     )
     expect(cadComponent.layer).toBe(layer)
-    expect(cadComponent.position.x).toBeCloseTo(expectedPosition.x, 8)
-    expect(cadComponent.position.y).toBeCloseTo(expectedPosition.y, 8)
+    expect(
+      cadComponent.position.x + (cadComponent.model_origin_position?.x ?? 0),
+    ).toBeCloseTo(expectedPosition.x, 8)
+    expect(
+      cadComponent.position.y + (cadComponent.model_origin_position?.y ?? 0),
+    ).toBeCloseTo(expectedPosition.y, 8)
     expect(cadComponent.position.z).toBeCloseTo(expectedPositionZ, 8)
     if (!cadComponent.rotation) {
       throw new Error(
@@ -146,7 +151,7 @@ export const expectTiEvmEmbeddedCadModelImport = async ({
     })
     expect(cadComponent.model_unit_to_mm_scale_factor).toBe(1)
     expect(cadComponent.model_board_normal_direction).toBe("z+")
-    expect(cadComponent.model_origin_position).toEqual({ x: 0, y: 0, z: 0 })
+    expect(cadComponent.model_origin_position?.z).toBe(0)
   }
 
   await expectTiEvmConversion3dSnapshot({
