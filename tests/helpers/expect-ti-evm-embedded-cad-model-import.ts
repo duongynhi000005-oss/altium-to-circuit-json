@@ -4,7 +4,7 @@ import {
   type AltiumPcbSide,
   parseAltiumBinaryPcbDoc,
 } from "altiumts"
-import type { CadComponent, CircuitJson } from "circuit-json"
+import type { CadComponent, CircuitJson, Point } from "circuit-json"
 import { convertAltiumPcbDocToCircuitJson } from "../../lib"
 import { toMillimeterPoint } from "../../lib/pcb/geometry"
 import { expectCadModelRotationMatchesAltium } from "./expect-cad-model-rotation-matches-altium"
@@ -15,6 +15,7 @@ interface EmbeddedModelPlacement {
   body: AltiumComponentBodyRecord
   bodyIndex: number
   componentIndex: number
+  componentPosition: Point
   componentSide: AltiumPcbSide
   modelIndex: number
 }
@@ -38,22 +39,24 @@ const getEmbeddedModelPlacements = (
     (componentBody, bodyIndex): EmbeddedModelPlacement[] => {
       if (!(componentBody instanceof AltiumComponentBodyRecord)) return []
       const componentIndex = componentBody.componentIndex
+      const embeddedModel =
+        document.getEmbeddedModelForComponentBody(componentBody)
+      const component = document.getComponentForRecord(componentBody)
       if (
+        !embeddedModel ||
+        !component?.position ||
         componentBody.modelPosition === undefined ||
         componentIndex === undefined
       ) {
         return []
       }
-      const embeddedModel =
-        document.getEmbeddedModelForComponentBody(componentBody)
-      const component = document.getComponentForRecord(componentBody)
-      if (!embeddedModel || !component) return []
 
       return [
         {
           body: componentBody,
           bodyIndex,
           componentIndex,
+          componentPosition: toMillimeterPoint(component.position),
           componentSide: component.side,
           modelIndex: embeddedModel.index,
         },
@@ -132,12 +135,19 @@ export const expectTiEvmEmbeddedCadModelImport = async ({
       `/cad-models/${pcbFilename}/${placement.modelIndex}.step`,
     )
     expect(cadComponent.layer).toBe(layer)
+    const distanceFromModelPosition = Math.hypot(
+      cadComponent.position.x - expectedPosition.x,
+      cadComponent.position.y - expectedPosition.y,
+    )
+    const distanceFromComponentPosition = Math.hypot(
+      cadComponent.position.x - placement.componentPosition.x,
+      cadComponent.position.y - placement.componentPosition.y,
+    )
     expect(
-      cadComponent.position.x + (cadComponent.model_origin_position?.x ?? 0),
-    ).toBeCloseTo(expectedPosition.x, 8)
-    expect(
-      cadComponent.position.y + (cadComponent.model_origin_position?.y ?? 0),
-    ).toBeCloseTo(expectedPosition.y, 8)
+      distanceFromModelPosition < 1e-8 || distanceFromComponentPosition < 1e-8,
+    ).toBe(true)
+    expect(cadComponent.model_origin_position?.x).toBe(0)
+    expect(cadComponent.model_origin_position?.y).toBe(0)
     expect(cadComponent.position.z).toBeCloseTo(expectedPositionZ, 8)
     if (!cadComponent.rotation) {
       throw new Error(

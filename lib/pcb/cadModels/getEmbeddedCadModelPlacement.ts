@@ -1,7 +1,7 @@
 import type { AltiumComponentBodyRecord, AltiumComponentRecord } from "altiumts"
-import type { PcbBoard, Point } from "circuit-json"
+import type { Point } from "circuit-json"
 import { toMillimeterPoint } from "../geometry"
-import { getPcbBoardDiagonal } from "./getPcbBoardDiagonal"
+import { isModelPositionOutsideBodyProjection } from "./isModelPositionOutsideBodyProjection"
 
 interface EmbeddedCadModelPlacement {
   modelOriginPosition: Point
@@ -11,11 +11,9 @@ interface EmbeddedCadModelPlacement {
 export function getEmbeddedCadModelPlacement({
   component,
   componentBody,
-  pcbBoard,
 }: {
   component: AltiumComponentRecord
   componentBody: AltiumComponentBodyRecord
-  pcbBoard: PcbBoard | undefined
 }): EmbeddedCadModelPlacement {
   const componentPosition = component.position
   const modelPosition = componentBody.modelPosition
@@ -25,26 +23,15 @@ export function getEmbeddedCadModelPlacement({
 
   const componentPositionMillimeters = toMillimeterPoint(componentPosition)
   const modelPositionMillimeters = toMillimeterPoint(modelPosition)
-  const distanceFromComponent = Math.hypot(
-    modelPositionMillimeters.x - componentPositionMillimeters.x,
-    modelPositionMillimeters.y - componentPositionMillimeters.y,
-  )
-  const boardDiagonal = getPcbBoardDiagonal(pcbBoard)
-  const hasBoardGlobalModelOrigin =
-    boardDiagonal !== undefined && distanceFromComponent > boardDiagonal
-
-  if (!hasBoardGlobalModelOrigin) {
-    return {
-      modelOriginPosition: { x: 0, y: 0 },
-      position: modelPositionMillimeters,
-    }
-  }
+  const shouldUseComponentPosition = isModelPositionOutsideBodyProjection({
+    componentBody,
+    modelPosition: modelPositionMillimeters,
+  })
 
   return {
-    modelOriginPosition: {
-      x: modelPositionMillimeters.x - componentPositionMillimeters.x,
-      y: modelPositionMillimeters.y - componentPositionMillimeters.y,
-    },
-    position: componentPositionMillimeters,
+    modelOriginPosition: { x: 0, y: 0 },
+    position: shouldUseComponentPosition
+      ? componentPositionMillimeters
+      : modelPositionMillimeters,
   }
 }

@@ -50,7 +50,6 @@ export function createEmbeddedPcbCadModels(
       const placement = getEmbeddedCadModelPlacement({
         component,
         componentBody,
-        pcbBoard,
       })
 
       return [
