@@ -4,14 +4,12 @@ import { toMillimeterPoint } from "../geometry"
 import type { PcbConversionContext } from "../model"
 import { createPrimitiveBodyPlan } from "./createPrimitiveBodyPlan"
 import { getCadModelLayer } from "./getCadModelLayer"
-import { getComponentsWithEmbeddedModels } from "./getComponentsWithEmbeddedModels"
 
 const DEFAULT_PCB_THICKNESS_MM = 1.6
 
 export function createPrimitivePcbCadModels(
   context: PcbConversionContext & { document: AltiumBinaryPcbDoc },
 ): CadComponent[] {
-  const componentsWithEmbeddedModels = getComponentsWithEmbeddedModels(context)
   const pcbBoard = context.elements.find(
     (element): element is PcbBoard => element.type === "pcb_board",
   )
@@ -21,12 +19,9 @@ export function createPrimitivePcbCadModels(
     (componentBody, bodyIndex) => {
       if (!(componentBody instanceof AltiumComponentBodyRecord)) return []
       const componentIndex = componentBody.componentIndex
-      if (
-        componentIndex === undefined ||
-        componentsWithEmbeddedModels.has(componentIndex)
-      ) {
+      if (componentIndex === undefined) return []
+      if (context.document.getEmbeddedModelForComponentBody(componentBody))
         return []
-      }
 
       const component = context.document.getComponentForRecord(componentBody)
       const componentPosition = component?.position
