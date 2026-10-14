@@ -90,7 +90,8 @@ export const expectTiEvmEmbeddedCadModelImport = async ({
       `/cad-models/${pcbFilename}/${embeddedModel.index}.step`,
   })
   const importedCadModels = circuitJson.filter(
-    (element): element is CadComponent => element.type === "cad_component",
+    (element): element is CadComponent =>
+      element.type === "cad_component" && element.model_step_url !== undefined,
   )
   const pcbBoard = circuitJson.find((element) => element.type === "pcb_board")
   if (!pcbBoard) throw new Error(`${pcbFilename} has no converted PCB board`)
