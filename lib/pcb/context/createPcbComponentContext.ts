@@ -5,6 +5,7 @@ import {
 } from "altiumts"
 import type { SourcePort } from "circuit-json"
 import { createPcbSourceComponent } from "../components/createPcbSourceComponent"
+import { getPcbComponentDesignator } from "../components/getPcbComponentDesignator"
 import { getPcbComponentId } from "../identifiers"
 import type { PcbCopperLayerMap } from "../layers"
 import type { PcbComponentContext } from "../model"
@@ -35,6 +36,7 @@ export function createPcbComponentContext({
   const ownedPads = new Set<AltiumPadRecord>()
   const sourceComponents: PcbComponentContext["sourceComponents"] = []
   const sourcePorts: SourcePort[] = []
+  const usedComponentNames = new Set<string>()
 
   for (const [componentIndex, component] of document.components.entries()) {
     const logicalPins: LogicalPcbPin[] = []
@@ -51,8 +53,25 @@ export function createPcbComponentContext({
     }
 
     const sourceComponentId = `source_component_altium_${componentIndex}`
+    const baseComponentName = getPcbComponentDesignator({
+      component,
+      componentIndex,
+      document,
+    })
+    let componentName = baseComponentName
+    let duplicateSuffix = componentIndex
+    while (usedComponentNames.has(componentName)) {
+      componentName = `${baseComponentName}_${duplicateSuffix}`
+      duplicateSuffix += 1
+    }
+    usedComponentNames.add(componentName)
     sourceComponents.push(
-      createPcbSourceComponent({ component, componentIndex }),
+      createPcbSourceComponent({
+        component,
+        componentName,
+        componentIndex,
+        displayDesignator: baseComponentName,
+      }),
     )
     if (!includePorts) continue
 
