@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@tscircuit/math-utils": "^0.0.9",
-    "altiumts": "github:tscircuit/altiumts#8db22cf449c7bf6584a968b4913be4e1bd4a93ad",
+    "altiumts": "github:tscircuit/altiumts#50434443e86e4598b653cbdbed9d204649c905f2",
     "circuit-json": "0.0.486",
     "format-si-unit": "^0.0.11",
     "polygon-clipping": "^0.15.7",
