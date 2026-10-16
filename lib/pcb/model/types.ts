@@ -56,7 +56,11 @@ export interface PcbRoutingConstraints {
     PcbBoard,
     | "allow_blind_and_buried_vias"
     | "is_via_in_pad_allowed"
+    | "min_different_net_trace_edge_to_trace_edge_clearance"
+    | "min_pad_edge_to_pad_edge_clearance"
     | "min_trace_width"
+    | "min_trace_to_pad_edge_clearance"
+    | "min_via_edge_to_pad_edge_clearance"
     | "min_via_hole_diameter"
     | "min_via_pad_diameter"
   >
