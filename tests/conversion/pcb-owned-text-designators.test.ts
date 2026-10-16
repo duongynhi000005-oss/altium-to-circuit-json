@@ -12,6 +12,8 @@ test("recovers unique component names from owned designator text", () => {
       "|RECORD=Component|ID=1|LAYER=TOP|X=200mil|Y=100mil",
       "|RECORD=Text|COMPONENT=1|LAYER=TOPOVERLAY|X=200mil|Y=100mil|HEIGHT=30mil|WIDESTRING=U1|DESIGNATOR=TRUE",
       "|RECORD=Component|ID=2|LAYER=TOP|X=300mil|Y=100mil",
+      "|RECORD=Component|ID=3|LAYER=TOP|X=400mil|Y=100mil",
+      "|RECORD=Text|COMPONENT=3|LAYER=TOPOVERLAY|X=400mil|Y=100mil|HEIGHT=30mil|WIDESTRING=.Designator|DESIGNATOR=TRUE",
     ].join("\n"),
   )
 
@@ -26,5 +28,6 @@ test("recovers unique component names from owned designator text", () => {
     { display_name: "U1", name: "U1" },
     { display_name: "U1", name: "U1_1" },
     { display_name: "component_2", name: "component_2" },
+    { display_name: "component_3", name: "component_3" },
   ])
 })

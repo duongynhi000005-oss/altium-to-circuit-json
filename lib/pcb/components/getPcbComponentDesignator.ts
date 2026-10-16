@@ -19,7 +19,9 @@ export function getPcbComponentDesignator({
   for (const record of document.getRecordsOwnedByComponent(component)) {
     if (!(record instanceof AltiumTextRecord) || !record.isDesignator) continue
     const textDesignator = record.text?.trim()
-    if (textDesignator) return textDesignator
+    if (textDesignator && textDesignator.toLowerCase() !== ".designator") {
+      return textDesignator
+    }
   }
 
   return `component_${componentIndex}`
